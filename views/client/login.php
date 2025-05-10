@@ -49,7 +49,7 @@
                     <h3 class="mb-0">Login</h3>
                 </div>
                 <div class="card-body">
-                    <form action="index.php" method="POST">
+                    <form action="../../controllers/client/authController.php" method="POST">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email address</label>
                             <input type="email" class="form-control" id="email" name="email" required>

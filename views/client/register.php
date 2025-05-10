@@ -38,6 +38,11 @@
         .form-control {
             padding: 12px;
         }
+
+        .password-strength {
+            font-size: 12px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 
@@ -49,7 +54,33 @@
                     <h3 class="mb-0">Create Account</h3>
                 </div>
                 <div class="card-body">
-                    <form action="index.php" method="POST">
+                    <?php if (isset($_GET['error'])): ?>
+                        <div class="alert alert-danger" role="alert">
+                            <?php
+                            switch ($_GET['error']) {
+                                case '1':
+                                    echo "Email already exists. Please use a different email.";
+                                    break;
+                                case '2':
+                                    echo "Registration failed. Please try again.";
+                                    break;
+                                case '3':
+                                    echo "All fields are required.";
+                                    break;
+                                case '4':
+                                    echo "Please enter a valid email address.";
+                                    break;
+                                case '5':
+                                    echo "Passwords do not match.";
+                                    break;
+                                default:
+                                    echo "An error occurred. Please try again.";
+                            }
+                            ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form action="../../controllers/client/registerController.php" method="POST" id="registerForm" onsubmit="return validateForm()">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="firstName" class="form-label">First Name</label>
@@ -66,15 +97,19 @@
                         </div>
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                            <input type="tel" class="form-control" id="phone" name="phone" required 
+                                pattern="[0-9]{10,}" title="Please enter a valid phone number">
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                required minlength="8" onkeyup="checkPasswordStrength()">
+                            <div id="passwordStrength" class="password-strength"></div>
                         </div>
                         <div class="mb-3">
                             <label for="confirmPassword" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <input type="password" class="form-control" id="confirmPassword" 
+                                name="confirmPassword" required minlength="8">
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="terms" required>
@@ -90,7 +125,42 @@
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            const strengthDiv = document.getElementById('passwordStrength');
+            const strength = {
+                0: "Very Weak",
+                1: "Weak",
+                2: "Medium",
+                3: "Strong",
+                4: "Very Strong"
+            };
+
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) score++;
+            if (password.match(/\d/)) score++;
+            if (password.match(/[^a-zA-Z\d]/)) score++;
+
+            strengthDiv.innerHTML = `Password Strength: ${strength[score]}`;
+            const colors = ["#ff0000", "#ff4500", "#ffa500", "#9acd32", "#008000"];
+            strengthDiv.style.color = colors[score];
+        }
+
+        function validateForm() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert("Passwords do not match!");
+                return false;
+            }
+            return true;
+        }
+    </script>
 </body>
 
 </html>

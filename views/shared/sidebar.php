@@ -57,24 +57,65 @@
         </nav>
 
         <!-- User Profile Section -->
-        <div class="p-4 border-t">
-            <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span class="text-sm font-medium text-gray-600">A</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900 truncate">Admin</p>
-                    <p class="text-xs text-gray-500 truncate">admin@example.com</p>
-                </div>
-                <button class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="p-4 border-t relative">
+            <!-- Admin Profile Button -->
+            <button onclick="toggleDropdown()" class="w-full">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                        <span class="text-sm font-medium text-gray-600">A</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">Admin</p>
+                        <p class="text-xs text-gray-500 truncate">admin@example.com</p>
+                    </div>
+                    <svg id="dropdownArrow" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
-                </button>
+                </div>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="dropdownMenu" class="absolute bottom-full left-0 w-full mb-1 bg-white rounded-lg shadow-lg border hidden">
+                <a href="../../controllers/admin/logout.php" 
+                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    <span>Logout</span>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Add margin to main content -->
-<div class="ml-64"></div> 
+<div class="ml-64"></div>
+
+<script>
+function toggleDropdown() {
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const dropdownArrow = document.getElementById('dropdownArrow');
+    
+    // Toggle dropdown visibility
+    dropdownMenu.classList.toggle('hidden');
+    
+    // Rotate arrow
+    if (dropdownMenu.classList.contains('hidden')) {
+        dropdownArrow.style.transform = 'rotate(0deg)';
+    } else {
+        dropdownArrow.style.transform = 'rotate(180deg)';
+    }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('dropdownMenu');
+    const button = event.target.closest('button');
+    
+    if (!button && !dropdown.classList.contains('hidden')) {
+        dropdown.classList.add('hidden');
+        document.getElementById('dropdownArrow').style.transform = 'rotate(0deg)';
+    }
+});
+</script> 

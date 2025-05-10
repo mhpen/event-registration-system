@@ -82,12 +82,12 @@ echo "<!-- Debug: Admin ID: " . $_SESSION['admin_id'] . " -->";
                         <table class="w-full">
                             <thead>
                                 <tr class="text-left border-b">
-                                    <th class="pb-4">Event Name</th>
-                                    <th class="pb-4">Date</th>
-                                    <th class="pb-4">Location</th>
-                                    <th class="pb-4">Description</th>
-                                    <th class="pb-4">Status</th>
-                                    <th class="pb-4">Actions</th>
+                                    <th class="pb-4 px-4 font-semibold text-gray-600">Event Name</th>
+                                    <th class="pb-4 px-4 font-semibold text-gray-600">Date</th>
+                                    <th class="pb-4 px-4 font-semibold text-gray-600">Location</th>
+                                    <th class="pb-4 px-4 font-semibold text-gray-600">Description</th>
+                                    <th class="pb-4 px-4 font-semibold text-gray-600">Status</th>
+                                    <th class="pb-4 px-4 font-semibold text-gray-600">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
@@ -107,46 +107,107 @@ echo "<!-- Debug: Admin ID: " . $_SESSION['admin_id'] . " -->";
 
     <!-- Create Event Modal -->
     <div id="eventModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Create New Event</h2>
-                <form action="../../controllers/admin/createEvent.php" method="POST">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
-                            Event Title
-                        </label>
-                        <input type="text" name="title" id="title" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-                            Description
-                        </label>
-                        <textarea name="description" id="description" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="event_date">
-                            Event Date
-                        </label>
-                        <input type="datetime-local" name="event_date" id="event_date" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="location">
-                            Location
-                        </label>
-                        <input type="text" name="location" id="location" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                    <div class="flex justify-end space-x-4">
-                        <button type="button" onclick="closeEventModal()"
-                            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
-                        <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create Event</button>
-                    </div>
-                </form>
+        <div class="relative top-20 mx-auto p-6 border w-[600px] shadow-lg rounded-lg bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">Create New Event</h2>
+                <button onclick="closeEventModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
+
+            <form id="createEventForm" action="../../controllers/admin/createEvent.php" method="POST">
+                <div class="space-y-4">
+                    <!-- Title and Category -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="title">
+                                Event Title <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="title" name="title" required
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="category">
+                                Category <span class="text-red-500">*</span>
+                            </label>
+                            <select id="category" name="category" required
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">Select category</option>
+                                <option value="Conference">Conference</option>
+                                <option value="Seminar">Seminar</option>
+                                <option value="Workshop">Workshop</option>
+                                <option value="Training">Training</option>
+                                <option value="Meeting">Meeting</option>
+                                <option value="Social">Social Event</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="description">
+                            Description <span class="text-red-500">*</span>
+                        </label>
+                        <textarea id="description" name="description" required rows="3"
+                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <!-- Date and Time -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="event_date">
+                                Start Date & Time <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" id="event_date" name="event_date" required
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="event_end_date">
+                                End Date & Time <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" id="event_end_date" name="event_end_date" required
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Location and Capacity -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="location">
+                                Location <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="location" name="location" required
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="capacity">
+                                Capacity <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" id="capacity" name="capacity" required min="-1" value="-1"
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <p class="text-xs text-gray-500 mt-1">Enter -1 for unlimited capacity</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="eventFormError" class="hidden mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-md"></div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                    <button type="button" onclick="closeEventModal()"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                        Create Event
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -169,71 +230,247 @@ echo "<!-- Debug: Admin ID: " . $_SESSION['admin_id'] . " -->";
         </div>
     </div>
 
-    <!-- Add Edit Event Modal -->
-    <div id="editEventModal" class="modal-overlay fixed inset-0 hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-800">Edit Event</h2>
-                    <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
+    <!-- Edit Event Modal -->
+    <div id="editEventModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-[800px] shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Edit Event</h2>
+                <button onclick="closeEditModal()" class="text-gray-600 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="editEventForm" method="POST">
+                <input type="hidden" id="edit_event_id" name="event_id">
+                
+                <!-- Title and Category -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="edit_title">
+                            Event Title <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="edit_title" name="title" required
+                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="edit_category">
+                            Category <span class="text-red-500">*</span>
+                        </label>
+                        <select id="edit_category" name="category" required
+                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="">Select category</option>
+                            <option value="Conference">Conference</option>
+                            <option value="Seminar">Seminar</option>
+                            <option value="Workshop">Workshop</option>
+                            <option value="Training">Training</option>
+                            <option value="Meeting">Meeting</option>
+                            <option value="Social">Social Event</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="edit_description">
+                        Description <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="edit_description" name="description" required rows="3"
+                        class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                </div>
+
+                <!-- Date and Time -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="edit_event_date">
+                            Start Date & Time <span class="text-red-500">*</span>
+                        </label>
+                        <input type="datetime-local" id="edit_event_date" name="event_date" required
+                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="edit_event_end_date">
+                            End Date & Time <span class="text-red-500">*</span>
+                        </label>
+                        <input type="datetime-local" id="edit_event_end_date" name="event_end_date" required
+                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <!-- Location and Capacity -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="edit_location">
+                            Location <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="edit_location" name="location" required
+                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="edit_capacity">
+                            Capacity <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" id="edit_capacity" name="capacity" required min="-1"
+                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Enter -1 for unlimited capacity</p>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="eventFormError" class="hidden mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-md"></div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                    <button type="button" onclick="closeEditModal()"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                        Update Event
                     </button>
                 </div>
-                <form id="editEventForm" action="../../controllers/admin/updateEvent.php" method="POST">
-                    <input type="hidden" name="event_id" id="edit_event_id">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_title">
-                            Event Title
-                        </label>
-                        <input type="text" name="title" id="edit_title" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_description">
-                            Description
-                        </label>
-                        <textarea name="description" id="edit_description" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            rows="4"></textarea>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_event_date">
-                            Event Date
-                        </label>
-                        <input type="datetime-local" name="event_date" id="edit_event_date" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_location">
-                            Location
-                        </label>
-                        <input type="text" name="location" id="edit_location" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                    <div class="flex justify-end space-x-4">
-                        <button type="button" onclick="closeEditModal()"
-                            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            Update Event
-                        </button>
-                    </div>
-                </form>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div id="addEventModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-6 border w-[600px] shadow-lg rounded-lg bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">Create New Event</h2>
+                <button onclick="closeAddEventModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
+
+            <form id="addEventForm" action="../../controllers/admin/createEvent.php" method="POST">
+                <input type="hidden" name="admin_id" value="<?php echo $_SESSION['admin_id']; ?>">
+                
+                <!-- Event Details -->
+                <div class="space-y-4">
+                    <!-- Title and Category -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="add_title">
+                                Event Title <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="add_title" name="title" required
+                                placeholder="Enter event title"
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="category">
+                                Category <span class="text-red-500">*</span>
+                            </label>
+                            <select id="category" name="category" required
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">Select category</option>
+                                <option value="Conference">Conference</option>
+                                <option value="Seminar">Seminar</option>
+                                <option value="Workshop">Workshop</option>
+                                <option value="Training">Training</option>
+                                <option value="Meeting">Meeting</option>
+                                <option value="Social">Social Event</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="description">
+                            Description <span class="text-red-500">*</span>
+                        </label>
+                        <textarea id="description" 
+                            name="description" 
+                            required 
+                            rows="3"
+                            placeholder="Enter event description"
+                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <!-- Date and Time -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="event_date">
+                                Start Date & Time <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" id="event_date" name="event_date" required
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="event_end_date">
+                                End Date & Time <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" id="event_end_date" name="event_end_date" required
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Location and Capacity -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="location">
+                                Location <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="location" name="location" required
+                                placeholder="Enter venue location"
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="capacity">
+                                Capacity <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" id="capacity" name="capacity" required min="1"
+                                placeholder="Max participants"
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="eventFormError" class="hidden mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-md"></div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                    <button type="button" onclick="closeAddEventModal()"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Create Event
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
         function openEventModal() {
             document.getElementById('eventModal').classList.remove('hidden');
+            // Initialize date/time fields
+            const now = new Date();
+            const nextHour = new Date(now);
+            nextHour.setHours(nextHour.getHours() + 1);
+            nextHour.setMinutes(0);
+            
+            const twoHoursLater = new Date(nextHour);
+            twoHoursLater.setHours(twoHoursLater.getHours() + 2);
+            
+            document.getElementById('event_date').value = nextHour.toISOString().slice(0, 16);
+            document.getElementById('event_end_date').value = twoHoursLater.toISOString().slice(0, 16);
         }
 
         function closeEventModal() {
             document.getElementById('eventModal').classList.add('hidden');
+            document.getElementById('createEventForm').reset();
+            clearError();
         }
 
         function toggleView() {
@@ -268,14 +505,21 @@ echo "<!-- Debug: Admin ID: " . $_SESSION['admin_id'] . " -->";
             $errorMessages = [
                 '1' => 'An error occurred during the operation.',
                 '2' => 'Admin session is invalid. Please try logging in again.',
-                '3' => 'Failed to create event in database.',
-                '4' => 'Database error occurred.'
+                '3' => 'Failed to create event in database. Please try again.',
+                '4' => 'Database error occurred. Please contact support.',
+                '5' => 'Event start date must be in the future.',
+                '6' => 'Event end date must be after start date.',
+                '7' => 'Event duration cannot exceed 12 hours.',
+                '8' => 'All required fields must be filled out.',
+                '9' => 'An unexpected error occurred. Please try again.'
             ];
             $errorMessage = isset($errorMessages[$_GET['error']]) ? 
                 $errorMessages[$_GET['error']] : 
                 'An unknown error occurred.';
             ?>
-            alert('<?php echo $errorMessage; ?>');
+            <script>
+                showError('<?php echo addslashes($errorMessage); ?>');
+            </script>
         <?php endif; ?>
 
         function viewEvent(eventId) {
@@ -389,45 +633,58 @@ echo "<!-- Debug: Admin ID: " . $_SESSION['admin_id'] . " -->";
         });
 
         function editEvent(eventId) {
+            // Fetch event details
             fetch(`../../controllers/admin/getEventDetails.php?id=${eventId}`)
                 .then(response => response.json())
-                .then(event => {
-                    if (event.error) {
-                        alert(event.error);
-                        return;
+                .then(data => {
+                    if (data.success) {
+                        const event = data.data;
+                        
+                        // Populate the edit form with decoded values
+                        document.getElementById('edit_event_id').value = event.event_id;
+                        document.getElementById('edit_title').value = decodeHTMLEntities(event.title);
+                        document.getElementById('edit_description').value = decodeHTMLEntities(event.description);
+                        document.getElementById('edit_category').value = event.category;
+                        
+                        // Format dates for datetime-local input
+                        const startDate = new Date(event.event_date);
+                        const endDate = new Date(event.event_end_date);
+                        document.getElementById('edit_event_date').value = startDate.toISOString().slice(0, 16);
+                        document.getElementById('edit_event_end_date').value = endDate.toISOString().slice(0, 16);
+                        
+                        document.getElementById('edit_location').value = decodeHTMLEntities(event.location);
+                        document.getElementById('edit_capacity').value = event.capacity;
+
+                        // Show the modal
+                        document.getElementById('editEventModal').classList.remove('hidden');
+                    } else {
+                        showError(data.error || 'Failed to fetch event details');
                     }
-                    
-                    // Populate the edit form
-                    document.getElementById('edit_event_id').value = event.event_id;
-                    document.getElementById('edit_title').value = event.title;
-                    document.getElementById('edit_description').value = event.description;
-                    
-                    // Format the date for datetime-local input
-                    const eventDate = new Date(event.event_date);
-                    const formattedDate = eventDate.toISOString().slice(0, 16);
-                    document.getElementById('edit_event_date').value = formattedDate;
-                    
-                    document.getElementById('edit_location').value = event.location;
-                    
-                    // Show the modal
-                    document.getElementById('editEventModal').classList.remove('hidden');
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Failed to load event details');
+                    showError('Failed to fetch event details');
                 });
+        }
+
+        // Add this helper function to decode HTML entities in JavaScript
+        function decodeHTMLEntities(text) {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = text;
+            return textarea.value;
         }
 
         function closeEditModal() {
             document.getElementById('editEventModal').classList.add('hidden');
+            document.getElementById('editEventForm').reset();
+            clearError();
         }
 
-        // Add form submission handling
+        // Add form submission handler for edit form
         document.getElementById('editEventForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const formData = new FormData(this);
-            
+
             fetch('../../controllers/admin/updateEvent.php', {
                 method: 'POST',
                 body: formData
@@ -435,16 +692,88 @@ echo "<!-- Debug: Admin ID: " . $_SESSION['admin_id'] . " -->";
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Event updated successfully!');
                     closeEditModal();
-                    window.location.reload(); // Refresh the page to show updated data
+                    // Refresh the events list or update the specific row
+                    window.location.reload(); // Or implement a more elegant solution to update just the changed row
                 } else {
-                    alert(data.error || 'Failed to update event');
+                    showError(data.error || 'Failed to update event');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Failed to update event');
+                showError('Failed to update event');
+            });
+        });
+
+        // Replace the form validation JavaScript with this simplified version
+        document.getElementById('addEventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            clearError();
+
+            // Get form values
+            const startDate = new Date(document.getElementById('event_date').value);
+            const endDate = new Date(document.getElementById('event_end_date').value);
+
+            // Only validate that end date is after start date
+            if (endDate <= startDate) {
+                showError('Event end date must be after start date');
+                return;
+            }
+
+            // If validation passes, submit the form
+            this.submit();
+        });
+
+        // Keep only these essential functions
+        function showError(message, modalId = null) {
+            const errorDiv = modalId 
+                ? document.querySelector(`#${modalId} #eventFormError`)
+                : document.getElementById('eventFormError');
+            
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function clearError() {
+            const errorDiv = document.getElementById('eventFormError');
+            errorDiv.textContent = '';
+            errorDiv.classList.add('hidden');
+        }
+
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form submission handling
+            document.getElementById('createEventForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const startDate = new Date(document.getElementById('event_date').value);
+                const endDate = new Date(document.getElementById('event_end_date').value);
+                const now = new Date();
+
+                clearError();
+
+                // Validate dates
+                if (startDate < now) {
+                    showError('Event start date must be in the future');
+                    return;
+                }
+
+                if (endDate <= startDate) {
+                    showError('Event end date must be after start date');
+                    return;
+                }
+
+                // If validation passes, submit the form
+                this.submit();
+            });
+
+            // Update end date when start date changes
+            document.getElementById('event_date').addEventListener('change', function() {
+                const startDate = new Date(this.value);
+                const endDate = new Date(startDate);
+                endDate.setHours(endDate.getHours() + 2);
+                document.getElementById('event_end_date').value = endDate.toISOString().slice(0, 16);
             });
         });
     </script>

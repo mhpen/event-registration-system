@@ -2,23 +2,43 @@
 session_start();
 require_once '../../config/dbconn.php';
 
-if (!isset($_SESSION['admin']) || !isset($_GET['id'])) {
-    exit(json_encode(['error' => 'Unauthorized']));
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['admin'])) {
+    echo json_encode(['error' => 'Unauthorized']);
+    exit();
 }
 
 try {
-    $stmt = $conn->prepare("SELECT * FROM events WHERE event_id = ? AND admin_id = ?");
-    $stmt->execute([$_GET['id'], $_SESSION['admin_id']]);
-    $event = $stmt->fetch(PDO::FETCH_ASSOC);
+    $event_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
     
+    $sql = "SELECT * FROM events WHERE event_id = ? AND admin_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$event_id, $_SESSION['admin_id']]);
+    $event = $stmt->fetch(PDO::FETCH_ASSOC);
+
     if ($event) {
-        header('Content-Type: application/json');
-        echo json_encode($event);
+        // Properly decode HTML entities for all text fields
+        $event = array_map(function($value) {
+            // Only decode string values
+            return is_string($value) ? html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8') : $value;
+        }, $event);
+        
+        echo json_encode([
+            'success' => true,
+            'data' => $event
+        ]);
     } else {
-        echo json_encode(['error' => 'Event not found']);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Event not found'
+        ]);
     }
-} catch(PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+} catch(Exception $e) {
+    error_log("Error in getEventDetails.php: " . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'error' => 'Failed to fetch event details'
+    ]);
 }
 ?>
