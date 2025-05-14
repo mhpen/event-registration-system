@@ -7,168 +7,116 @@ if (!isset($_SESSION['admin'])) {
 ?>
 <?php include '../shared/header.php'; ?>
 
-<body class="bg-gray-50">
+<body class="bg-background">
     <div class="flex h-screen">
         <?php include '../shared/sidebar.php'; ?>
 
         <!-- Main Content -->
-        <div class="flex-1 overflow-auto">
-            <div class="p-8">
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-2xl font-semibold text-gray-800">Attendance Tracking</h1>
-                    <div class="flex space-x-4">
-                        <select id="eventFilter" class="rounded-lg border px-4 py-2">
-                            <option value="">All Events</option>
-                            <?php
-                            require_once '../../config/dbconn.php';
-                            try {
-                                $stmt = $conn->query("SELECT event_id, title FROM events ORDER BY event_date DESC");
-                                while ($event = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                    $title = html_entity_decode($event['title'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                                    echo "<option value='{$event['event_id']}'>{$title}</option>";
-                                }
-                            } catch(PDOException $e) {
-                                echo "<option value=''>Error loading events</option>";
-                            }
-                            ?>
-                        </select>
-                        <button onclick="exportAttendanceReport()" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            <i class="fas fa-download mr-2"></i>Export Report
-                        </button>
+        <div class="flex-1 overflow-auto bg-background">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-xl font-semibold tracking-tight">Attendance Dashboard</h1>
+                        <p class="text-sm text-muted-foreground">Monitor event attendance and check-in statistics</p>
                     </div>
                 </div>
 
-                <!-- Attendance Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <?php
-                    try {
-                        // Total Registrations
-                        $stmt = $conn->query("SELECT COUNT(*) FROM registrations WHERE status = 'registered'");
-                        $totalRegistrations = $stmt->fetchColumn();
-
-                        // Total Check-ins
-                        $stmt = $conn->query("SELECT COUNT(*) FROM checkins WHERE status = 'checked_in'");
-                        $totalCheckins = $stmt->fetchColumn();
-
-                        // Average Attendance Rate
-                        $stmt = $conn->query("
-                            SELECT 
-                                ROUND(AVG(attendance_rate), 2) as avg_rate
-                            FROM (
-                                SELECT 
-                                    e.event_id,
-                                    (COUNT(DISTINCT c.checkin_id) * 100.0 / COUNT(DISTINCT r.registration_id)) as attendance_rate
-                                FROM events e
-                                LEFT JOIN registrations r ON e.event_id = r.event_id
-                                LEFT JOIN checkins c ON e.event_id = c.event_id
-                                GROUP BY e.event_id
-                            ) as rates
-                        ");
-                        $avgAttendanceRate = $stmt->fetchColumn() ?: 0;
-                    } catch(PDOException $e) {
-                        error_log("Error fetching attendance stats: " . $e->getMessage());
-                    }
-                    ?>
-                    
-                    <!-- Stats Cards -->
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <div class="flex items-center">
-                            <div class="bg-blue-100 p-3 rounded-full">
-                                <i class="fas fa-user-plus text-blue-600 text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-gray-500 text-sm">Total Registrations</h3>
-                                <p class="text-2xl font-semibold"><?= number_format($totalRegistrations) ?></p>
-                            </div>
+                <!-- KPI Cards -->
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+                    <!-- Total Events -->
+                    <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+                        <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <h3 class="text-sm font-medium tracking-tight text-muted-foreground">Total Events</h3>
+                            <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center pt-2">
+                            <div class="text-2xl font-bold" id="totalEvents">-</div>
+                            <div class="ml-2 text-xs text-muted-foreground">events</div>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <div class="flex items-center">
-                            <div class="bg-green-100 p-3 rounded-full">
-                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-gray-500 text-sm">Total Check-ins</h3>
-                                <p class="text-2xl font-semibold"><?= number_format($totalCheckins) ?></p>
-                            </div>
+                    <!-- Total Registrations -->
+                    <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+                        <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <h3 class="text-sm font-medium tracking-tight text-muted-foreground">Total Registrations</h3>
+                            <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center pt-2">
+                            <div class="text-2xl font-bold" id="totalRegistrations">-</div>
+                            <div class="ml-2 text-xs text-muted-foreground">registrations</div>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <div class="flex items-center">
-                            <div class="bg-purple-100 p-3 rounded-full">
-                                <i class="fas fa-chart-line text-purple-600 text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-gray-500 text-sm">Average Attendance Rate</h3>
-                                <p class="text-2xl font-semibold"><?= number_format($avgAttendanceRate, 1) ?>%</p>
-                            </div>
+                    <!-- Total Check-ins -->
+                    <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+                        <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <h3 class="text-sm font-medium tracking-tight text-muted-foreground">Total Check-ins</h3>
+                            <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center pt-2">
+                            <div class="text-2xl font-bold" id="totalCheckins">-</div>
+                            <div class="ml-2 text-xs text-muted-foreground">check-ins</div>
+                        </div>
+                    </div>
+
+                    <!-- Average Attendance Rate -->
+                    <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+                        <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <h3 class="text-sm font-medium tracking-tight text-muted-foreground">Attendance Rate</h3>
+                            <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center pt-2">
+                            <div class="text-2xl font-bold" id="attendanceRate">-</div>
+                            <div class="ml-2 text-xs text-muted-foreground">average rate</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Attendance Records -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="p-6">
-                        <table class="w-full" id="attendanceTable">
-                            <thead>
-                                <tr class="text-left border-b">
-                                    <th class="pb-4">Event</th>
-                                    <th class="pb-4">Date</th>
-                                    <th class="pb-4">Total Registrations</th>
-                                    <th class="pb-4">Checked In</th>
-                                    <th class="pb-4">Attendance Rate</th>
-                                    <th class="pb-4">Actions</th>
+                <!-- Event Attendance Table -->
+                <div class="rounded-lg border bg-card text-card-foreground">
+                    <div class="flex items-center justify-between p-6 pb-4">
+                        <h4 class="text-lg font-medium">Event Attendance</h4>
+                        <div class="flex items-center gap-2">
+                            <!-- Search -->
+                            <div class="relative">
+                                <input type="text" id="searchInput" placeholder="Search events..." 
+                                    class="h-9 px-3 py-1 text-sm rounded-md border border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                                <svg class="w-4 h-4 absolute right-3 top-2.5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <select id="statusFilter" 
+                                class="h-9 px-3 py-1 text-sm rounded-md border border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                                <option value="">All Events</option>
+                                <option value="upcoming">Upcoming</option>
+                                <option value="past">Past</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="relative w-full overflow-auto">
+                        <table class="w-full caption-bottom text-sm">
+                            <thead class="[&_tr]:border-b">
+                                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                    <th class="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Event</th>
+                                    <th class="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Date</th>
+                                    <th class="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Registrations</th>
+                                    <th class="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Check-ins</th>
+                                    <th class="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Attendance Rate</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y">
-                                <?php
-                                try {
-                                    $stmt = $conn->query("
-                                        SELECT 
-                                            e.event_id,
-                                            e.title,
-                                            e.event_date,
-                                            COUNT(DISTINCT r.registration_id) as total_registrations,
-                                            COUNT(DISTINCT c.checkin_id) as total_checkins,
-                                            CASE 
-                                                WHEN COUNT(DISTINCT r.registration_id) > 0 
-                                                THEN ROUND((COUNT(DISTINCT c.checkin_id) * 100.0 / COUNT(DISTINCT r.registration_id)), 1)
-                                                ELSE 0 
-                                            END as attendance_rate
-                                        FROM events e
-                                        LEFT JOIN registrations r ON e.event_id = r.event_id
-                                        LEFT JOIN checkins c ON e.event_id = c.event_id
-                                        GROUP BY e.event_id, e.title, e.event_date
-                                        ORDER BY e.event_date DESC
-                                    ");
-
-                                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                        $title = html_entity_decode($row['title'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                                        $attendanceClass = $row['attendance_rate'] >= 70 ? 'text-green-600' : 
-                                                         ($row['attendance_rate'] >= 50 ? 'text-yellow-600' : 'text-red-600');
-                                        ?>
-                                        <tr>
-                                            <td class="py-4"><?= $title ?></td>
-                                            <td><?= date('M j, Y g:i A', strtotime($row['event_date'])) ?></td>
-                                            <td><?= number_format($row['total_registrations']) ?></td>
-                                            <td><?= number_format($row['total_checkins']) ?></td>
-                                            <td class="<?= $attendanceClass ?>"><?= $row['attendance_rate'] ?>%</td>
-                                            <td>
-                                                <button onclick="viewEventDetails(<?= $row['event_id'] ?>)" 
-                                                    class="text-blue-600 hover:text-blue-800">
-                                                    <i class="fas fa-eye mr-1"></i>View Details
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <?php
-                                    }
-                                } catch(PDOException $e) {
-                                    echo "<tr><td colspan='6' class='text-center text-red-600 py-4'>Error loading attendance records</td></tr>";
-                                }
-                                ?>
+                            <tbody id="attendanceTableBody" class="[&_tr:last-child]:border-0">
+                                <!-- Table data will be populated here -->
                             </tbody>
                         </table>
                     </div>
@@ -177,113 +125,83 @@ if (!isset($_SESSION['admin'])) {
         </div>
     </div>
 
-    <!-- Event Details Modal -->
-    <div id="eventDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-800" id="modalTitle">Event Details</h2>
-                <button onclick="closeEventModal()" class="text-gray-600 hover:text-gray-800">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div id="eventDetailsContent">
-                <!-- Content will be dynamically loaded -->
-            </div>
-        </div>
-    </div>
-
     <script>
-        function viewEventDetails(eventId) {
-            fetch(`../../controllers/admin/getEventAttendance.php?event_id=${eventId}`)
+        // Fetch attendance data and update UI
+        function fetchAttendanceData() {
+            fetch('../../controllers/admin/getAttendanceData.php')
                 .then(response => response.json())
                 .then(data => {
-                    const modal = document.getElementById('eventDetailsModal');
-                    const content = document.getElementById('eventDetailsContent');
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
                     
-                    // Decode HTML entities in JavaScript
-                    const decodeHTML = (html) => {
-                        const textarea = document.createElement('textarea');
-                        textarea.innerHTML = html;
-                        return textarea.value;
-                    };
-                    
-                    content.innerHTML = `
-                        <div class="mb-4">
-                            <h3 class="font-semibold">${decodeHTML(data.event.title)}</h3>
-                            <p class="text-gray-600">${data.event.date}</p>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead>
-                                    <tr class="text-left border-b">
-                                        <th class="pb-2">Participant</th>
-                                        <th class="pb-2">Email</th>
-                                        <th class="pb-2">Check-in Time</th>
-                                        <th class="pb-2">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y">
-                                    ${data.attendees.map(attendee => `
-                                        <tr>
-                                            <td class="py-2">${decodeHTML(attendee.name)}</td>
-                                            <td>${attendee.email}</td>
-                                            <td>${attendee.checkin_time || 'Not checked in'}</td>
-                                            <td>
-                                                <span class="px-2 py-1 rounded-full text-sm ${
-                                                    attendee.status === 'checked_in' 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-yellow-100 text-yellow-800'
-                                                }">
-                                                    ${attendee.status === 'checked_in' ? 'Checked In' : 'Registered'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                    
-                    modal.classList.remove('hidden');
+                    // Update KPI cards
+                    document.getElementById('totalEvents').textContent = data.totalEvents;
+                    document.getElementById('totalRegistrations').textContent = data.totalRegistrations;
+                    document.getElementById('totalCheckins').textContent = data.totalCheckins;
+                    document.getElementById('attendanceRate').textContent = data.averageAttendanceRate + '%';
+
+                    // Populate table
+                    const tableBody = document.getElementById('attendanceTableBody');
+                    tableBody.innerHTML = data.events.map(event => `
+                        <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                            <td class="p-4 align-middle">
+                                <div class="font-medium">${event.title}</div>
+                                <div class="text-sm text-muted-foreground">${event.location}</div>
+                            </td>
+                            <td class="p-4 align-middle">${new Date(event.event_date).toLocaleDateString()}</td>
+                            <td class="p-4 align-middle">${event.registrations}</td>
+                            <td class="p-4 align-middle">${event.checkins}</td>
+                            <td class="p-4 align-middle">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-16">${event.attendance_rate}%</div>
+                                    <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary" style="width: ${event.attendance_rate}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+
+                    // Initialize search and filter
+                    initializeSearchAndFilter();
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Failed to load event details');
+                    alert('Failed to load attendance data: ' + error.message);
                 });
         }
 
-        function closeEventModal() {
-            document.getElementById('eventDetailsModal').classList.add('hidden');
-        }
+        // Search and filter functionality
+        function initializeSearchAndFilter() {
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const rows = document.querySelectorAll('#attendanceTableBody tr');
 
-        function exportAttendanceReport() {
-            const eventId = document.getElementById('eventFilter').value;
-            window.location.href = `../../controllers/admin/exportAttendance.php${eventId ? '?event_id=' + eventId : ''}`;
-        }
+            function filterTable() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const status = statusFilter.value.toLowerCase();
 
-        // Event filter functionality
-        document.getElementById('eventFilter').addEventListener('change', function() {
-            const eventId = this.value;
-            const rows = document.querySelectorAll('#attendanceTable tbody tr');
-            
-            if (!eventId) {
-                rows.forEach(row => row.style.display = '');
-                return;
+                rows.forEach(row => {
+                    const title = row.querySelector('td:first-child').textContent.toLowerCase();
+                    const date = new Date(row.querySelector('td:nth-child(2)').textContent);
+                    const isUpcoming = date > new Date();
+                    
+                    const matchesSearch = title.includes(searchTerm);
+                    const matchesStatus = !status || 
+                        (status === 'upcoming' && isUpcoming) || 
+                        (status === 'past' && !isUpcoming);
+
+                    row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+                });
             }
 
-            rows.forEach(row => {
-                const shouldShow = row.querySelector('button')?.getAttribute('onclick')?.includes(eventId);
-                row.style.display = shouldShow ? '' : 'none';
-            });
-        });
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('eventDetailsModal');
-            if (event.target === modal) {
-                closeEventModal();
-            }
+            searchInput.addEventListener('input', filterTable);
+            statusFilter.addEventListener('change', filterTable);
         }
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', fetchAttendanceData);
     </script>
 </body>
 </html> 

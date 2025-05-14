@@ -7,211 +7,332 @@ if (!isset($_SESSION['admin'])) {
 ?>
 <?php include '../shared/header.php'; ?>
 
-<!-- Add Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<body class="bg-gray-50">
+<body class="bg-background">
     <div class="flex h-screen">
         <?php include '../shared/sidebar.php'; ?>
 
         <!-- Main Content -->
-        <div class="flex-1 overflow-auto p-8">
-            <!-- Header -->
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h1 class="text-2xl font-semibold text-gray-800">Dashboard Overview</h1>
-                    <p class="text-gray-600">Welcome back, Admin!</p>
-                </div>
-                <div class="flex space-x-4">
-                    <button class="px-4 py-2 bg-white text-gray-600 rounded-xl border hover:bg-gray-50">
-                        <span>This Month</span>
-                        <svg class="w-4 h-4 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </button>
-                    <button class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700">
-                        Download Report
-                    </button>
-                </div>
-            </div>
-
-            <!-- KPI Cards -->
-            <div class="grid grid-cols-4 gap-6 mb-8">
-                <!-- Total Events -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="bg-blue-100 p-3 rounded-xl">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                        <span class="text-green-600 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                            </svg>
-                            12%
-                        </span>
+        <div class="flex-1 overflow-auto bg-background">
+            <div class="p-6">
+                <!-- Header with actions -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-xl font-semibold tracking-tight">Dashboard</h1>
+                        <p class="text-sm text-muted-foreground">Overview of your event management system</p>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-800">42</h3>
-                    <p class="text-gray-600">Total Events</p>
-                </div>
-
-                <!-- Total Participants -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="bg-green-100 p-3 rounded-xl">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                        </div>
-                        <span class="text-green-600 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                            </svg>
-                            8%
-                        </span>
+                    <div class="flex items-center gap-3">
+                        <button class="btn-hover inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                            Download Report
+                        </button>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-800">1,234</h3>
-                    <p class="text-gray-600">Total Participants</p>
                 </div>
 
-                <!-- Average Attendance -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="bg-purple-100 p-3 rounded-xl">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                            </svg>
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <?php
+                    require_once '../../config/dbconn.php';
+                    try {
+                        // Total Events
+                        $stmt = $conn->query("SELECT COUNT(*) FROM events");
+                        $totalEvents = $stmt->fetchColumn();
+
+                        // Upcoming Events
+                        $stmt = $conn->query("SELECT COUNT(*) FROM events WHERE event_date > NOW()");
+                        $upcomingEvents = $stmt->fetchColumn();
+
+                        // Total Participants
+                        $stmt = $conn->query("SELECT COUNT(*) FROM participants");
+                        $totalParticipants = $stmt->fetchColumn();
+
+                        // Total Registrations
+                        $stmt = $conn->query("SELECT COUNT(*) FROM registrations WHERE status = 'registered'");
+                        $totalRegistrations = $stmt->fetchColumn();
+                    } catch(PDOException $e) {
+                        error_log("Error fetching dashboard stats: " . $e->getMessage());
+                    }
+                    ?>
+
+                    <div class="stat-card p-4 rounded-lg border bg-card text-card-foreground">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium">Total Events</span>
                         </div>
-                        <span class="text-green-600 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                            </svg>
-                            5%
-                        </span>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800">89%</h3>
-                    <p class="text-gray-600">Average Attendance</p>
-                </div>
-
-                <!-- Upcoming Events -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="bg-yellow-100 p-3 rounded-xl">
-                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                        <div class="mt-1">
+                            <span class="text-2xl font-bold"><?= number_format($totalEvents) ?></span>
                         </div>
-                        <span class="text-yellow-600 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                            </svg>
-                            15
-                        </span>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-800">12</h3>
-                    <p class="text-gray-600">Upcoming Events</p>
-                </div>
-            </div>
 
-            <!-- Charts -->
-            <div class="grid grid-cols-2 gap-6 mb-8">
-                <!-- Event Attendance Trend -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Event Attendance Trend</h3>
-                    <canvas id="attendanceChart" height="200"></canvas>
-                </div>
-
-                <!-- Participant Growth -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Participant Growth</h3>
-                    <canvas id="growthChart" height="200"></canvas>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="bg-white rounded-xl shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
-                <div class="space-y-4">
-                    <!-- Activity items -->
-                    <div class="flex items-center justify-between py-3 border-b">
-                        <div class="flex items-center">
-                            <div class="bg-blue-100 p-2 rounded-lg">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-800">New Event Created</p>
-                                <p class="text-sm text-gray-500">Tech Conference 2024</p>
-                            </div>
+                    <div class="stat-card p-4 rounded-lg border bg-card text-card-foreground">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium">Upcoming Events</span>
                         </div>
-                        <span class="text-sm text-gray-500">2 hours ago</span>
+                        <div class="mt-1">
+                            <span class="text-2xl font-bold"><?= number_format($upcomingEvents) ?></span>
+                        </div>
                     </div>
-                    <!-- Add more activity items -->
+
+                    <div class="stat-card p-4 rounded-lg border bg-card text-card-foreground">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium">Total Participants</span>
+                        </div>
+                        <div class="mt-1">
+                            <span class="text-2xl font-bold"><?= number_format($totalParticipants) ?></span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card p-4 rounded-lg border bg-card text-card-foreground">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium">Total Registrations</span>
+                        </div>
+                        <div class="mt-1">
+                            <span class="text-2xl font-bold"><?= number_format($totalRegistrations) ?></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="hover-lift p-4 rounded-lg border bg-card text-card-foreground">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-medium">Events by Category</span>
+                        </div>
+                        <div class="h-[300px]">
+                            <canvas id="eventsByCategoryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="hover-lift p-4 rounded-lg border bg-card text-card-foreground">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-medium">Registration Trends</span>
+                        </div>
+                        <div class="h-[300px]">
+                            <canvas id="registrationTrendsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="hover-lift p-4 rounded-lg border bg-card text-card-foreground">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-medium">Attendance Rates</span>
+                        </div>
+                        <div class="h-[300px]">
+                            <canvas id="attendanceRateChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="hover-lift p-4 rounded-lg border bg-card text-card-foreground">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-medium">Popular Events</span>
+                        </div>
+                        <div class="h-[300px]">
+                            <canvas id="eventPopularityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Events Table - Minimal Design -->
+                <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-medium">Recent Events</span>
+                            <a href="events.php" class="text-sm text-primary hover:underline">View all</a>
+                        </div>
+                        <div class="relative w-full overflow-auto">
+                            <table class="w-full caption-bottom text-sm">
+                                <thead class="[&_tr]:border-b">
+                                    <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                        <th class="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Event</th>
+                                        <th class="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Date</th>
+                                        <th class="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="[&_tr:last-child]:border-0">
+                                    <?php
+                                    try {
+                                        $stmt = $conn->query("
+                                            SELECT 
+                                                e.*,
+                                                COUNT(r.registration_id) as registration_count
+                                            FROM events e
+                                            LEFT JOIN registrations r ON e.event_id = r.event_id
+                                            GROUP BY e.event_id
+                                            ORDER BY e.event_date DESC
+                                            LIMIT 5
+                                        ");
+
+                                        while ($event = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            $title = html_entity_decode($event['title'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                                            $eventDate = new DateTime($event['event_date']);
+                                            $now = new DateTime();
+                                            $status = $eventDate > $now ? 
+                                                '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Upcoming</span>' : 
+                                                '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-700">Past</span>';
+                                            ?>
+                                            <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                                <td class="h-10 px-2 text-left align-middle font-medium text-muted-foreground"><?= $title ?></td>
+                                                <td class="h-10 px-2 text-left align-middle font-medium text-muted-foreground"><?= $eventDate->format('M j, Y g:i A') ?></td>
+                                                <td class="h-10 px-2 text-left align-middle font-medium text-muted-foreground"><?= $status ?></td>
+                                            </tr>
+                                            <?php
+                                        }
+                                    } catch(PDOException $e) {
+                                        echo "<tr><td colspan='3' class='text-center py-4 text-red-600'>Error loading recent events</td></tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Add this before closing body tag -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Attendance Chart
-        const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
-        new Chart(attendanceCtx, {
-            type: 'line',
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch data for charts
+        fetch('../../controllers/admin/getDashboardStats.php')
+            .then(response => response.json())
+            .then(data => {
+                // Events by Category Chart
+                new Chart(document.getElementById('eventsByCategoryChart'), {
+                    type: 'doughnut',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        labels: data.eventsByCategory.map(item => item.category),
                 datasets: [{
-                    label: 'Attendance Rate',
-                    data: [75, 82, 78, 85, 80, 89],
-                    borderColor: 'rgb(59, 130, 246)',
-                    tension: 0.4,
-                    fill: false
+                            data: data.eventsByCategory.map(item => item.count),
+                            backgroundColor: [
+                                '#3B82F6', // blue
+                                '#10B981', // green
+                                '#8B5CF6', // purple
+                                '#F59E0B', // yellow
+                                '#EF4444'  // red
+                            ]
                 }]
             },
             options: {
                 responsive: true,
+                        maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false
+                                position: 'bottom'
+                            }
+                        }
                     }
-                },
+                });
+
+                // Registration Trends Chart
+                new Chart(document.getElementById('registrationTrendsChart'), {
+                    type: 'line',
+                    data: {
+                        labels: data.registrationTrends.map(item => item.date),
+                        datasets: [{
+                            label: 'Registrations',
+                            data: data.registrationTrends.map(item => item.count),
+                            borderColor: '#3B82F6',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 100
+                                ticks: {
+                                    precision: 0
+                                }
                     }
                 }
             }
         });
 
-        // Growth Chart
-        const growthCtx = document.getElementById('growthChart').getContext('2d');
-        new Chart(growthCtx, {
+                // Attendance Rate Chart
+                new Chart(document.getElementById('attendanceRateChart'), {
             type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        labels: data.attendanceRates.map(item => item.event_name),
                 datasets: [{
-                    label: 'New Participants',
-                    data: [120, 150, 180, 250, 300, 420],
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderColor: 'rgb(59, 130, 246)',
-                    borderWidth: 1
+                            label: 'Attendance Rate (%)',
+                            data: data.attendanceRates.map(item => item.rate),
+                            backgroundColor: '#3B82F6',
+                            borderRadius: 4
                 }]
             },
             options: {
                 responsive: true,
+                        maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Attendance: ${context.raw}%`;
+                                    }
+                                }
                     }
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Attendance Rate (%)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        }
                     }
-                }
-            }
+                });
+
+                // Event Popularity Chart
+                new Chart(document.getElementById('eventPopularityChart'), {
+                    type: 'radar',
+                    data: {
+                        labels: data.eventPopularity.map(item => item.event_name),
+                        datasets: [{
+                            label: 'Registrations',
+                            data: data.eventPopularity.map(item => item.registration_count),
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: '#3B82F6',
+                            pointBackgroundColor: '#3B82F6',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#3B82F6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 5
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Registrations: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error loading chart data:', error));
         });
     </script>
 </body>

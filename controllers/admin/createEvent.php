@@ -2,88 +2,75 @@
 session_start();
 require_once '../../config/dbconn.php';
 
+header('Content-Type: application/json');
+
 if (!isset($_SESSION['admin'])) {
-    header('Location: ../../views/admin/adminLogin.php');
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Validate admin session
-    if (!isset($_SESSION['admin_id'])) {
-        header('Location: ../../views/admin/events.php?error=2');
-        exit();
+try {
+    // Validate required fields
+    $required_fields = ['title', 'description', 'event_date', 'event_end_date', 'category', 'admin_id', 'event_type'];
+    foreach ($required_fields as $field) {
+        if (!isset($_POST[$field]) || empty($_POST[$field])) {
+            throw new Exception("Missing required field: $field");
+        }
     }
 
-    try {
-        // Get and sanitize form data
-        $admin_id = (int)$_SESSION['admin_id'];
-        $title = htmlspecialchars(trim($_POST['title']), ENT_QUOTES, 'UTF-8');
-        $description = htmlspecialchars(trim($_POST['description']), ENT_QUOTES, 'UTF-8');
-        $event_date = $_POST['event_date'];
-        $event_end_date = $_POST['event_end_date'];
-        $location = htmlspecialchars(trim($_POST['location']), ENT_QUOTES, 'UTF-8');
-        $capacity = isset($_POST['capacity']) ? (int)$_POST['capacity'] : -1;
-        $category = filter_var(trim($_POST['category']), FILTER_SANITIZE_STRING);
+    // Start transaction
+    $conn->beginTransaction();
 
-        // Validate required fields
-        if (empty($title) || empty($description) || empty($event_date) || 
-            empty($event_end_date) || empty($location) || empty($category)) {
-            header('Location: ../../views/admin/events.php?error=8');
-            exit();
-        }
+    // Insert event
+    $stmt = $conn->prepare("
+        INSERT INTO events (
+            title, description, event_date, event_end_date, 
+            location, category, admin_id, event_type
+        ) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ");
 
-        // Validate dates
-        $start = new DateTime($event_date);
-        $end = new DateTime($event_end_date);
-        $now = new DateTime();
+    $location = $_POST['event_type'] === 'online' ? 'Online Event' : htmlspecialchars($_POST['location']);
 
-        // Check if event date is in the future
-        if ($start < $now) {
-            header('Location: ../../views/admin/events.php?error=5');
-            exit();
-        }
+    $stmt->execute([
+        htmlspecialchars($_POST['title']),
+        htmlspecialchars($_POST['description']),
+        $_POST['event_date'],
+        $_POST['event_end_date'],
+        $location,
+        htmlspecialchars($_POST['category']),
+        $_POST['admin_id'],
+        $_POST['event_type']
+    ]);
 
-        // Check if end date is after start date
-        if ($end <= $start) {
-            header('Location: ../../views/admin/events.php?error=6');
-            exit();
-        }
+    $eventId = $conn->lastInsertId();
 
-        // Insert event into database
-        $sql = "INSERT INTO events (
-            admin_id, title, description, event_date, event_end_date,
-            location, capacity, category, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-
-        $stmt = $conn->prepare($sql);
-        $result = $stmt->execute([
-            $admin_id,
-            $title,
-            $description,
-            $event_date,
-            $event_end_date,
-            $location,
-            $capacity,
-            $category
-        ]);
-
-        if ($result) {
-            header('Location: ../../views/admin/events.php?success=1');
-        } else {
-            header('Location: ../../views/admin/events.php?error=3');
-        }
-    } catch(PDOException $e) {
-        error_log("Database error: " . $e->getMessage());
-        header('Location: ../../views/admin/events.php?error=4');
-    } catch(Exception $e) {
-        error_log("General error: " . $e->getMessage());
-        header('Location: ../../views/admin/events.php?error=9');
+    // If it's an online event, store the meeting link
+    if ($_POST['event_type'] === 'online' && !empty($_POST['meeting_link'])) {
+        $stmt = $conn->prepare("
+            INSERT INTO event_meetings (event_id, meeting_link)
+            VALUES (?, ?)
+        ");
+        $stmt->execute([$eventId, htmlspecialchars($_POST['meeting_link'])]);
     }
-    exit();
-}
 
-// Debug: Log if script is accessed without POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    error_log("createEvent.php accessed with " . $_SERVER['REQUEST_METHOD'] . " method");
+    // Commit transaction
+    $conn->commit();
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Event created successfully'
+    ]);
+
+} catch(Exception $e) {
+    // Rollback on error
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    error_log("Error in createEvent.php: " . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Failed to create event: ' . $e->getMessage()
+    ]);
 }
 ?> 

@@ -2,37 +2,41 @@
 session_start();
 require_once '../../config/dbconn.php';
 
+header('Content-Type: application/json');
+
 if (!isset($_SESSION['admin'])) {
-    header('Location: ../../views/admin/adminLogin.php');
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit();
 }
 
-if (isset($_GET['id'])) {
-    $event_id = $_GET['id'];
+try {
+    $data = json_decode(file_get_contents('php://input'), true);
     
-    try {
-        // First check if the event exists and belongs to the current admin
-        $stmt = $conn->prepare("SELECT admin_id FROM events WHERE event_id = ?");
-        $stmt->execute([$event_id]);
-        $event = $stmt->fetch();
-
-        if ($event && $event['admin_id'] == $_SESSION['admin_id']) {
-            // Delete the event
-            $stmt = $conn->prepare("DELETE FROM events WHERE event_id = ?");
-            $stmt->execute([$event_id]);
-            
-            header('Location: ../../views/admin/events.php?success=1');
-            exit();
-        } else {
-            header('Location: ../../views/admin/events.php?error=1');
-            exit();
-        }
-    } catch(PDOException $e) {
-        header('Location: ../../views/admin/events.php?error=1');
-        exit();
+    if (!isset($data['event_id'])) {
+        throw new Exception('Event ID is required');
     }
-} else {
-    header('Location: ../../views/admin/events.php?error=1');
-    exit();
+
+    // First delete related records (registrations, etc.)
+    $stmt = $conn->prepare("DELETE FROM registrations WHERE event_id = ?");
+    $stmt->execute([$data['event_id']]);
+    
+    $stmt = $conn->prepare("DELETE FROM checkins WHERE event_id = ?");
+    $stmt->execute([$data['event_id']]);
+
+    // Then delete the event
+    $stmt = $conn->prepare("DELETE FROM events WHERE event_id = ?");
+    $stmt->execute([$data['event_id']]);
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Event deleted successfully'
+    ]);
+
+} catch(Exception $e) {
+    error_log("Error in deleteEvent.php: " . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Failed to delete event: ' . $e->getMessage()
+    ]);
 }
 ?> 

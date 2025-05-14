@@ -1,132 +1,147 @@
-<!DOCTYPE html>
-<html lang="en">
+<?php include_once '../shared/header.php'; ?>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Event Registration System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+<body class="bg-background min-h-screen font-sans antialiased">
+    <div class="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+        <!-- Left side with image -->
+        <div class="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
+            <div class="absolute inset-0">
+                <!-- Background Image -->
+                <img 
+                    src="../../public/assets/pexels-adrien-olichon-1257089-2387532.jpg" 
+                    alt="Background" 
+                    class="h-full w-full object-cover"
+                />
+                <!-- Gradient Overlay -->
+                <div class="absolute inset-0 bg-black/50"></div>
+                <!-- Additional Gradient for better text readability -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
+            </div>
+            <!-- Content -->
+            <div class="relative z-20 flex items-center text-lg font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-6 w-6">
+                    <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
+                </svg>
+                Event Registration System
+            </div>
+            <!-- Quote Section -->
+            <div class="relative z-20 mt-auto">
+                <blockquote class="space-y-2">
+                    <p class="text-lg">
+                        "Create your account today and unlock access to exclusive events and experiences."
+                    </p>
+                    <footer class="text-sm text-white/60">
+                        Event Registration System
+                    </footer>
+                </blockquote>
+            </div>
+        </div>
 
-        .register-container {
-            max-width: 500px;
-            margin: 50px auto;
-        }
-
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            background-color: #fff;
-            border-bottom: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-        }
-
-        .form-control {
-            padding: 12px;
-        }
-
-        .password-strength {
-            font-size: 12px;
-            margin-top: 5px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="register-container">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="mb-0">Create Account</h3>
+        <!-- Right side with registration form -->
+        <div class="lg:p-8">
+            <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
+                <div class="flex flex-col space-y-2 text-center">
+                    <h1 class="text-2xl font-semibold tracking-tight">Create an account</h1>
+                    <p class="text-sm text-muted-foreground">Enter your details to get started</p>
                 </div>
-                <div class="card-body">
-                    <?php if (isset($_GET['error'])): ?>
-                        <div class="alert alert-danger" role="alert">
-                            <?php
-                            switch ($_GET['error']) {
-                                case '1':
-                                    echo "Email already exists. Please use a different email.";
-                                    break;
-                                case '2':
-                                    echo "Registration failed. Please try again.";
-                                    break;
-                                case '3':
-                                    echo "All fields are required.";
-                                    break;
-                                case '4':
-                                    echo "Please enter a valid email address.";
-                                    break;
-                                case '5':
-                                    echo "Passwords do not match.";
-                                    break;
-                                default:
-                                    echo "An error occurred. Please try again.";
-                            }
-                            ?>
-                        </div>
-                    <?php endif; ?>
 
-                    <form action="../../controllers/client/registerController.php" method="POST" id="registerForm" onsubmit="return validateForm()">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="firstName" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="firstName" name="firstName" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="lastName" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="lastName" name="lastName" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" required 
-                                pattern="[0-9]{10,}" title="Please enter a valid phone number">
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" 
-                                required minlength="8" onkeyup="checkPasswordStrength()">
-                            <div id="passwordStrength" class="password-strength"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="confirmPassword" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" 
-                                name="confirmPassword" required minlength="8">
-                        </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="terms" required>
-                            <label class="form-check-label" for="terms">I agree to the Terms and Conditions</label>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Register</button>
-                    </form>
-                    <div class="text-center mt-3">
-                        <p>Already have an account? <a href="login.php">Login here</a></p>
-                        <a href="index.php">Back to Home</a>
+                <?php if (isset($_GET['error'])): ?>
+                    <div class="rounded-md bg-destructive/15 text-destructive px-4 py-3 text-sm">
+                        <?php
+                        switch ($_GET['error']) {
+                            case '1':
+                                echo "Email already exists. Please use a different email.";
+                                break;
+                            case '2':
+                                echo "Registration failed. Please try again.";
+                                break;
+                            case '3':
+                                echo "All fields are required.";
+                                break;
+                            case '4':
+                                echo "Please enter a valid email address.";
+                                break;
+                            case '5':
+                                echo "Passwords do not match.";
+                                break;
+                            default:
+                                echo "An error occurred. Please try again.";
+                        }
+                        ?>
                     </div>
+                <?php endif; ?>
+
+                <form action="../../controllers/client/registerController.php" method="POST" id="registerForm" onsubmit="return validateForm()">
+                    <div class="grid gap-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="grid gap-2">
+                                <label class="text-sm font-medium leading-none" for="firstName">First Name</label>
+                                <input type="text" id="firstName" name="firstName" required
+                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                            </div>
+                            <div class="grid gap-2">
+                                <label class="text-sm font-medium leading-none" for="lastName">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" required
+                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                            </div>
+                        </div>
+
+                        <div class="grid gap-2">
+                            <label class="text-sm font-medium leading-none" for="email">Email</label>
+                            <input type="email" id="email" name="email" required
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="name@example.com">
+                        </div>
+
+                        <div class="grid gap-2">
+                            <label class="text-sm font-medium leading-none" for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required pattern="[0-9]{10,}"
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="Enter your phone number">
+                        </div>
+
+                        <div class="grid gap-2">
+                            <label class="text-sm font-medium leading-none" for="password">Password</label>
+                            <div class="relative">
+                                <input type="password" id="password" name="password" required minlength="8"
+                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    onkeyup="checkPasswordStrength()">
+                                <div id="passwordStrength" class="absolute right-0 -bottom-6 text-xs"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-2">
+                            <label class="text-sm font-medium leading-none" for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8"
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="terms" required
+                                class="h-4 w-4 rounded border border-input bg-background">
+                            <label for="terms" class="text-sm text-muted-foreground">
+                                I agree to the <a href="#" class="text-primary hover:underline">Terms and Conditions</a>
+                            </label>
+                        </div>
+
+                        <button type="submit" 
+                            class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2">
+                            Create Account
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center text-sm">
+                    <span class="text-muted-foreground">Already have an account? </span>
+                    <a href="login.php" class="text-primary hover:underline">Sign in</a>
+                </div>
+
+                <div class="text-center">
+                    <a href="index.php" class="text-sm text-muted-foreground hover:underline">Back to Home</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function checkPasswordStrength() {
             const password = document.getElementById('password').value;
@@ -146,7 +161,7 @@
             if (password.match(/[^a-zA-Z\d]/)) score++;
 
             strengthDiv.innerHTML = `Password Strength: ${strength[score]}`;
-            const colors = ["#ff0000", "#ff4500", "#ffa500", "#9acd32", "#008000"];
+            const colors = ["#dc2626", "#ea580c", "#d97706", "#65a30d", "#16a34a"];
             strengthDiv.style.color = colors[score];
         }
 
@@ -162,5 +177,4 @@
         }
     </script>
 </body>
-
 </html>

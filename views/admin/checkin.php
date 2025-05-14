@@ -12,26 +12,41 @@ if (!isset($_SESSION['admin'])) {
         <?php include '../shared/sidebar.php'; ?>
 
         <!-- Main Content -->
-        <div class="flex-1 overflow-auto">
-            <div class="p-8">
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-2xl font-semibold text-gray-800">Check-in Management</h1>
-                    <div class="flex space-x-4">
+        <div class="flex-1 overflow-auto bg-background">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-xl font-semibold tracking-tight">Check-in Management</h1>
+                        <p class="text-sm text-muted-foreground">Process and monitor event check-ins</p>
+                    </div>
+                    <div class="flex items-center gap-2">
                         <button onclick="openQRScanner()" 
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-                            <i class="fas fa-qrcode mr-2"></i>Scan QR Code
+                            class="btn-hover inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 6v10m-6-6h4m-6 2h2"/>
+                            </svg>
+                            Scan QR
                         </button>
                         <button onclick="openManualCheckin()" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            <i class="fas fa-user-check mr-2"></i>Manual Check-in
+                            class="btn-hover inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            Manual Check-in
                         </button>
                     </div>
                 </div>
 
-                <!-- Active Events for Check-in -->
-                <div class="bg-white rounded-lg shadow mb-8">
-                    <div class="p-6">
-                        <h2 class="text-lg font-semibold mb-4">Active Events</h2>
+                <!-- Active Events Section -->
+                <div class="rounded-lg border bg-card text-card-foreground mb-6">
+                    <div class="flex items-center justify-between p-6 pb-4">
+                        <div>
+                            <h2 class="text-lg font-medium leading-none tracking-tight">Active Events</h2>
+                            <p class="text-sm text-muted-foreground mt-1">Select an event for check-in</p>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <?php
                             require_once '../../config/dbconn.php';
@@ -46,72 +61,45 @@ if (!isset($_SESSION['admin'])) {
                                 $stmt->execute();
                                 
                                 while ($event = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                    // Decode HTML entities for text fields
                                     $title = html_entity_decode($event['title'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
                                     $location = html_entity_decode($event['location'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
                                     
                                     echo "
-                                    <div class='border rounded-lg p-4 hover:bg-gray-50 cursor-pointer'
+                                    <div class='border rounded-lg p-4 hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer event-card'
+                                         data-event-id='{$event['event_id']}'
                                          onclick='selectEvent({$event['event_id']})'>
-                                        <h3 class='font-semibold'>{$title}</h3>
-                                        <p class='text-sm text-gray-600'>" . date('g:i A', strtotime($event['event_date'])) . "</p>
-                                        <p class='text-sm text-gray-600'>{$location}</p>
+                                        <div class='font-medium'>{$title}</div>
+                                        <div class='text-sm text-muted-foreground mt-1'>" . date('g:i A', strtotime($event['event_date'])) . "</div>
+                                        <div class='text-sm text-muted-foreground'>{$location}</div>
                                     </div>";
                                 }
                             } catch(PDOException $e) {
-                                echo "<div class='col-span-3 text-center text-red-600'>Error: " . $e->getMessage() . "</div>";
+                                echo "<div class='col-span-3 text-center text-sm text-muted-foreground'>No active events found</div>";
                             }
                             ?>
                         </div>
                     </div>
                 </div>
 
-                <!-- Recent Check-ins -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-lg font-semibold">Recent Check-ins</h2>
-                            <div class="flex items-center space-x-4">
-                                <!-- Event Filter Dropdown -->
-                                <select id="eventFilter" onchange="filterCheckins()" 
-                                    class="border rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">All Events</option>
-                                    <?php
-                                    try {
-                                        $stmt = $conn->prepare("
-                                            SELECT DISTINCT e.event_id, e.title 
-                                            FROM events e
-                                            JOIN checkins c ON e.event_id = c.event_id
-                                            WHERE e.event_date >= CURDATE() 
-                                            AND e.event_date <= DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-                                            ORDER BY e.event_date ASC
-                                        ");
-                                        $stmt->execute();
-                                        while ($event = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                            $title = html_entity_decode($event['title'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                                            echo "<option value='{$event['event_id']}'>{$title}</option>";
-                                        }
-                                    } catch(PDOException $e) {
-                                        echo "<option value=''>Error loading events</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
+                <!-- Recent Check-ins Section -->
+                <div class="rounded-lg border bg-card text-card-foreground">
+                    <div class="flex items-center justify-between p-6 pb-4">
+                        <div>
+                            <h2 class="text-lg font-medium leading-none tracking-tight">Recent Check-ins</h2>
+                            <p class="text-sm text-muted-foreground mt-1" id="selectedEventTitle">Select an event to view check-ins</p>
                         </div>
-
-                        <div id="checkinsTableContainer">
-                            <table class="w-full">
-                                <thead>
-                                    <tr class="text-left border-b">
-                                        <th class="pb-4 px-4 font-semibold text-gray-600">Participant</th>
-                                        <th class="pb-4 px-4 font-semibold text-gray-600">Event</th>
-                                        <th class="pb-4 px-4 font-semibold text-gray-600">Check-in Time</th>
-                                        <th class="pb-4 px-4 font-semibold text-gray-600">Status</th>
-                                        <th class="pb-4 px-4 font-semibold text-gray-600">Actions</th>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <div class="relative w-full overflow-auto">
+                            <table id="checkinsTable" class="w-full caption-bottom text-sm hidden">
+                                <thead class="[&_tr]:border-b">
+                                    <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                        <th class="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Participant</th>
+                                        <th class="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Check-in Time</th>
+                                        <th class="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y" id="checkinsTableBody">
-                                    <!-- Check-ins will be loaded here -->
+                                <tbody id="checkinsTableBody" class="[&_tr:last-child]:border-0">
                                 </tbody>
                             </table>
                         </div>
@@ -122,66 +110,34 @@ if (!isset($_SESSION['admin'])) {
     </div>
 
     <!-- Manual Check-in Modal -->
-    <div id="manualCheckinModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-800">Manual Check-in</h2>
-                <button onclick="closeManualCheckin()" class="text-gray-600 hover:text-gray-800">
-                    <i class="fas fa-times"></i>
+    <div id="manualCheckinModal" class="fixed inset-0 bg-background/80 backdrop-blur-sm hidden z-50">
+        <div class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 rounded-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold leading-none tracking-tight">Manual Check-in</h3>
+                    <p class="text-sm text-muted-foreground mt-1">Enter participant registration code</p>
+                </div>
+                <button onclick="closeManualCheckin()" class="text-muted-foreground hover:text-foreground">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                 </button>
             </div>
-            <form id="manualCheckinForm" onsubmit="submitManualCheckin(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="eventSelect">
-                        Select Event
-                    </label>
-                    <select id="eventSelect" name="event_id" required
-                        class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="">Select an event...</option>
-                        <?php
-                        try {
-                            $stmt = $conn->prepare("
-                                SELECT event_id, title, event_date 
-                                FROM events 
-                                WHERE event_date >= CURDATE() 
-                                AND event_date <= DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-                                ORDER BY event_date ASC
-                            ");
-                            $stmt->execute();
-                            while ($event = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                $title = html_entity_decode($event['title'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                                echo "<option value='" . $event['event_id'] . "'>" . 
-                                    $title . " - " . 
-                                    date('g:i A', strtotime($event['event_date'])) . 
-                                    "</option>";
-                            }
-                        } catch(PDOException $e) {
-                            echo "<option value=''>Error loading events</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="registrationCode">
+            <form id="manualCheckinForm" onsubmit="submitManualCheckin(event)" class="space-y-4">
+                <input type="hidden" id="eventSelect" name="event_id">
+                <div>
+                    <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="registration_code">
                         Registration Code
                     </label>
-                    <input type="text" id="registrationCode" name="registration_code" required
-                        class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    <input type="text" id="registration_code" name="registration_code" required
+                        class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder="Enter registration code">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="notes">
-                        Notes (Optional)
-                    </label>
-                    <textarea id="notes" name="notes"
-                        class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        rows="3"></textarea>
-                </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeManualCheckin()"
-                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Check In</button>
+                <div class="flex justify-end">
+                    <button type="submit" 
+                        class="btn-hover inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4">
+                        Check In
+                    </button>
                 </div>
             </form>
         </div>
@@ -208,20 +164,63 @@ if (!isset($_SESSION['admin'])) {
         let selectedEventId = null;
         let html5QrcodeScanner = null;
 
-        function selectEvent(eventId) {
+        function selectEvent(eventId, eventTitle) {
+            // Set the selected event ID
             selectedEventId = eventId;
-            // Highlight selected event
-            document.querySelectorAll('.border').forEach(el => {
-                if (el.getAttribute('onclick') === `selectEvent(${eventId})`) {
-                    el.classList.add('border-blue-500', 'bg-blue-50');
-                    // Update the event filter dropdown
-                    document.getElementById('eventFilter').value = eventId;
-                    // Load check-ins for this event
-                    loadCheckins(eventId);
-                } else {
-                    el.classList.remove('border-blue-500', 'bg-blue-50');
+
+            // Show the table
+            document.getElementById('checkinsTable').classList.remove('hidden');
+
+            // Update selected event styling
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.classList.remove('bg-accent', 'text-accent-foreground');
+                if (card.dataset.eventId == eventId) {
+                    card.classList.add('bg-accent', 'text-accent-foreground');
+                    // Update the Recent Check-ins subtitle with selected event name
+                    document.getElementById('selectedEventTitle').textContent = `Check-ins for ${card.querySelector('.font-medium').textContent}`;
                 }
             });
+
+            // Fetch and update recent check-ins for the selected event
+            fetch(`../../controllers/admin/getRecentCheckins.php?event_id=${eventId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#checkinsTableBody');
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    if (data.checkins.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="3" class="p-4 text-center text-sm text-muted-foreground">
+                                    No check-ins found for this event
+                                </td>
+                            </tr>`;
+                        return;
+                    }
+
+                    tableBody.innerHTML = data.checkins.map(checkin => `
+                        <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                            <td class="p-4 align-middle">${checkin.full_name}</td>
+                            <td class="p-4 align-middle">${new Date(checkin.checkin_time).toLocaleString()}</td>
+                            <td class="p-4 align-middle">
+                                <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                    Checked In
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.querySelector('#checkinsTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="3" class="p-4 text-center text-sm text-muted-foreground">
+                                Failed to load check-ins
+                            </td>
+                        </tr>`;
+                });
         }
 
         function openManualCheckin() {
